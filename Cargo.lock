@@ -3,7 +3,11 @@
 version = 3
 
 [[package]]
-name = "hello-world"
+name = "add"
+version = "0.1.0"
+
+[[package]]
+name = "sub"
 version = "0.1.0"
 
 [[package]]

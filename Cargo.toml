@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "add",
+  "sub",
   "xtask",
 ]
 
