@@ -30,7 +30,10 @@ fn print_help() {
 clippy:        Runs `cargo clippy`
 fmt:           Runs `cargo fmt`
 test:          Runs `cargo test`
-pre-commit:    Runs `cargo fmt`, `cargo clippy` and `cargo test`"#
+pre-commit:    Runs `cargo fmt`, `cargo clippy` and `cargo test`
+gen-profraw:   Runs `cargo test` with `-Cinstrument-coverage` generating `coverage/*.profraw` files
+gen-html:      Runs `grcov` generating html files in `coverage/html/`
+gen-lcov:      Rusn `grcov` generating `coverate/tests.lcov`"#
     );
 }
 
@@ -53,7 +56,7 @@ fn gen_profraw() -> Result<(), DynError> {
         .env("TMPDIR", coverage_dir)
         .env("LLVM_PROFILE_FILE", "%t/cargo-test-%p-%m.profraw")
         .arg("test")
-        .args(["-p", "sub", "-p", "add"])
+        //.args(["-p", "sub", "-p", "add"]) // All packages if none, else choose specific packages
         //.args(remaining_args)
         .status()?;
 
@@ -65,85 +68,47 @@ fn gen_profraw() -> Result<(), DynError> {
 }
 
 fn gen_html() -> Result<(), DynError> {
-    let pb = project_root().join("coverage").join("html");
-    let output_path = pb.to_string_lossy();
-    eprintln!("Create {output_path}");
-
-    let pb = project_root().join("target").join("debug").join("deps");
-    let debug_deps_dir_full_path = pb.to_string_lossy();
-
-    let pb = Path::new("/home/wink/prgs/rust/clones/grcov/target/debug/grcov");
-    let grcov = pb.to_string_lossy().to_string();
-    //let status = Command::new("grcov")
-    println!("gen_html: grcov={grcov}");
-    let status = Command::new(grcov)
-        .current_dir(project_root())
-        .args([
-            ".",
-            "--binary-path",
-            &debug_deps_dir_full_path,
-            "--branch",
-            "--ignore-not-existing",
-            "--source-dir",
-            ".",
-            // Ignore path releative to --source-dir
-            //"--ignore", // Not sure what this does?
-            //"../*",
-            //"--ignore", // Not sure what this does?
-            //"/*",
-            "--ignore",
-            "xtask/*",
-            "--ignore",
-            "*/src/tests/*",
-            "--output-type",
-            "html",
-            "--output-path",
-            &output_path,
-        ])
-        //.args(remaining_args)
-        .status()?;
-
-    if !status.success() {
-        Err(format!("Creating {output_path} Failed"))?;
-    }
-
-    Ok(())
+    println!("gen_html");
+    let output_path_buf = project_root().join("coverage").join("html");
+    gen_coverage("html", &output_path_buf)
 }
 
 fn gen_lcov() -> Result<(), DynError> {
-    let pb = project_root().join("coverage").join("tests.lcov");
-    let output_path = pb.to_string_lossy();
+    let output_path_buf = project_root().join("coverage").join("tests.lcov");
+    gen_coverage("lcov", &output_path_buf)
+}
+
+fn gen_coverage(output_type: &str, output_path_buf: &PathBuf) -> Result<(), DynError> {
+    let output_path = output_path_buf.to_string_lossy();
     eprintln!("Create {output_path}");
 
-    //let pb = project_root().join("coverage");
-    //let coverage_dir_full_path = pb.to_string_lossy();
     let pb = project_root().join("target").join("debug").join("deps");
-    let debug_deps_dir_full_path = pb.to_string_lossy();
+    let binary_path = pb.to_string_lossy();
 
-    let pb = Path::new("/home/wink/prgs/rust/clones/grcov/target/debug/grcov");
-    let grcov = pb.to_string_lossy().to_string();
-    //let status = Command::new("grcov")
+    //let pb = Path::new("/home/wink/prgs/rust/clones/grcov/target/debug/grcov");
+    //let grcov = pb.to_string_lossy().to_string();
+    let grcov = "grcov".to_string();
     let status = Command::new(&grcov)
         .current_dir(project_root())
         .args([
-            ".", //&coverage_dir_full_path,
+            ".",
             "--binary-path",
-            &debug_deps_dir_full_path,
+            &binary_path,
             "--branch",
             "--ignore-not-existing",
             "--source-dir",
             ".",
-            // Ignore path releative to --source-dir
-            //"--ignore", // Not sure what this does?
-            //"../*",
-            //"--ignore", // Not sure what this does?
-            //"/*",
+            // All --ignore options are releative to --source-dir
             "--ignore",
             "xtask/*",
-            "--ignore",
-            "*/src/tests/*",
+            //"--ignore",
+            //"*/src/tests/*",
+            //"--ignore",
+            //"../*", // Ignore all explicitly relative paths
+            //"--ignore",
+            //"/*", // Ignore all absolute paths
             "--output-type",
-            "lcov",
+            output_type,
             "--output-path",
             &output_path,
         ])
@@ -213,3 +178,14 @@ fn project_root() -> PathBuf {
         .unwrap()
         .to_path_buf()
 }
+
+//#[cfg(test)]
+//mod test {
+//    use super::*; //project_root;
+//
+//    #[test]
+//    fn test_project_root() {
+//        let pr = project_root();
+//        assert!(pr.starts_with("/"));
+//    }
+//}
