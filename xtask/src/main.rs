@@ -16,6 +16,7 @@ fn main() -> Result<(), DynError> {
         Some("test") => cargo_cmd("test", &remaining_args)?,
         Some("clippy") => cargo_cmd("clippy", &remaining_args)?,
         Some("pre-commit") => pre_commit(&remaining_args)?,
+        Some("gen-phl") => gen_phl()?,
         Some("gen-profraw") => gen_profraw()?,
         Some("gen-html") => gen_html()?,
         Some("gen-lcov") => gen_lcov()?,
@@ -27,13 +28,17 @@ fn main() -> Result<(), DynError> {
 fn print_help() {
     eprintln!(
         r#"Tasks:
-clippy:        Runs `cargo clippy`
-fmt:           Runs `cargo fmt`
-test:          Runs `cargo test`
-pre-commit:    Runs `cargo fmt`, `cargo clippy` and `cargo test`
-gen-profraw:   Runs `cargo test` with `-Cinstrument-coverage` generating `coverage/*.profraw` files
-gen-html:      Runs `grcov` generating html files in `coverage/html/`
-gen-lcov:      Rusn `grcov` generating `coverate/tests.lcov`"#
+    pre-commit:    Runs `cargo fmt`, `cargo clippy` and `cargo test` in <proj-root>
+    gen-phl:       Removes <proj-root>/coverage/ then generates coverage data in <proj-root>/coverage/
+                   using gen-profraw, gen-html and gen-lcov.
+
+Tasks for testing the above tasks:
+    clippy:        Runs `cargo clippy` in current directory
+    fmt:           Runs `cargo fmt` in current directory
+    test:          Runs `cargo test` in current directory
+    gen-profraw:   Runs `cargo test` with `-Cinstrument-coverage` generating `<proj-root>/coverage/*.profraw` files
+    gen-html:      Runs `grcov` generating html files in `<proj-root>/coverage/html/`
+    gen-lcov:      Rust `grcov` generating `<proj-root>/coverage/tests.lcov`"#
     );
 }
 
@@ -41,6 +46,16 @@ fn pre_commit(remaining_args: &Vec<String>) -> Result<(), DynError> {
     cargo_cmd_prj_root("test", remaining_args)?;
     cargo_cmd_prj_root("clippy", remaining_args)?;
     cargo_cmd_prj_root("fmt", remaining_args)?;
+
+    Ok(())
+}
+
+fn gen_phl() -> Result<(), DynError> {
+    std::fs::remove_dir_all(project_root().join("coverage"))?;
+    std::fs::create_dir_all(project_root().join("coverage"))?;
+    gen_profraw()?;
+    gen_lcov()?;
+    gen_html()?;
 
     Ok(())
 }
@@ -78,7 +93,7 @@ fn gen_lcov() -> Result<(), DynError> {
     gen_coverage("lcov", &output_path_buf)
 }
 
-fn gen_coverage(output_type: &str, output_path_buf: &PathBuf) -> Result<(), DynError> {
+fn gen_coverage(output_type: &str, output_path_buf: &Path) -> Result<(), DynError> {
     let output_path = output_path_buf.to_string_lossy();
     eprintln!("Create {output_path}");
 

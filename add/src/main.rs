@@ -1,4 +1,4 @@
-//#![cfg_attr(coverage_nightly, feature(no_coverage))]
+// #![cfg_attr(coverage_nightly, feature(no_coverage))] // Doesn't work yet
 #![feature(no_coverage)]
 
 fn add(a: i32, b: i32) -> i32 {
@@ -14,6 +14,7 @@ fn main() {
 mod test {
     use super::*;
 
+    //#[cfg_attr(coverage_nightly, no_coverage)] // Doesn't work yet?
     #[no_coverage]
     #[test]
     fn test_succeeds() {
@@ -30,7 +31,6 @@ mod test {
     //  `cargo xt test -- --include-ignored` or
     //  `cargo test -- --include-ignored`
     #[no_coverage]
-    //#[cfg_attr(coverage_nightly, no_coverage)]
     #[test]
     fn test_fails() {
         assert_ne!(add(1, 1), 1);
