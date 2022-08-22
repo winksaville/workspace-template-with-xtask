@@ -7,29 +7,22 @@ To use this as a template simply `git clone https://github.com/winksaville/works
 this repo, remove the `.git` directory and then modify as you see fit.
 See [workspaces](https://doc.rust-lang.org/cargo/reference/workspaces.html).
 
-## Building
+## Using
 
-The folloing sections define tasks, "scripts" written in rust,
+The following sections define tasks, "scripts" written in rust,
 which maybe executed with either `cargo xtask xxx` or `cargo xt xxx`.
-Where `xxx` is one of the `tasks` below:
+Where `xxx` is one of the `Tasks` below:
 
-> See [cargo/config](.cargo/config)
+> See [cargo/config](.cargo/config) for the aliases
 
-### clippy
+```
+Tasks:
+    pre-commit:    Runs `cargo fmt`, `cargo clippy` and `cargo test` in <proj-root>
+    gen-phl:       Removes <proj-root>/coverage/ then generates coverage data
+                   in <proj-root>/coverage/ using gen-profraw, gen-html and gen-lcov.
+```
 
-Runs `cargo clippy` in the current directory
-
-### fmt
-
-Runs `cargo fmt` in the current directory
-
-### test
-
-Runs `cargo test` in the current directory
-
-### pre-commit
-
-Runs `cargo fmt`, `cargo clipppy` and `cargo test` from the project root
+See [Coverage/Html](coverage/html).
 
 ## License
 
