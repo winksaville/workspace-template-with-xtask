@@ -20,6 +20,7 @@ fn main() -> Result<(), DynError> {
         Some("gen-profraw") => gen_profraw()?,
         Some("gen-html") => gen_html()?,
         Some("gen-lcov") => gen_lcov()?,
+        Some("gen-covdir") => gen_covdir()?,
         _ => print_help(),
     }
     Ok(())
@@ -29,8 +30,8 @@ fn print_help() {
     eprintln!(
         r#"Tasks:
     pre-commit:    Runs `cargo fmt`, `cargo clippy` and `cargo test` in <proj-root>
-    gen-phl:       Generates coverage data in \<proj-root\>/coverage/ using
-                    `cargo test -Cinstrument-coverage` and `grcov`.
+    gen-phl:       Removes <proj-root>/coverage/ then generates coverage data in <proj-root>/coverage/
+                   using gen-profraw, gen-html and gen-lcov.
 
 Tasks for testing the above tasks:
     clippy:        Runs `cargo clippy` in current directory
@@ -38,7 +39,8 @@ Tasks for testing the above tasks:
     test:          Runs `cargo test` in current directory
     gen-profraw:   Runs `cargo test` with `-Cinstrument-coverage` generating `<proj-root>/coverage/*.profraw` files
     gen-html:      Runs `grcov` generating html files in `<proj-root>/coverage/html/`
-    gen-lcov:      Rust `grcov` generating `<proj-root>/coverage/tests.lcov`"#
+    gen-lcov:      Rust `grcov` generating `<proj-root>/coverage/tests.lcov`
+    gen-covdir:    Rust `grcov` generating `<proj-root>/coverage/tests.covdir.json`"#
     );
 }
 
@@ -56,6 +58,7 @@ fn gen_phl() -> Result<(), DynError> {
     gen_profraw()?;
     gen_lcov()?;
     gen_html()?;
+    gen_covdir()?;
 
     Ok(())
 }
@@ -91,6 +94,11 @@ fn gen_html() -> Result<(), DynError> {
 fn gen_lcov() -> Result<(), DynError> {
     let output_path_buf = project_root().join("coverage").join("tests.lcov");
     gen_coverage("lcov", &output_path_buf)
+}
+
+fn gen_covdir() -> Result<(), DynError> {
+    let output_path_buf = project_root().join("coverage").join("tests.covdir.json");
+    gen_coverage("covdir", &output_path_buf)
 }
 
 fn gen_coverage(output_type: &str, output_path_buf: &Path) -> Result<(), DynError> {
