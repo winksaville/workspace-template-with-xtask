@@ -22,7 +22,7 @@ Tasks:
                    in <proj-root>/coverage/ using gen-profraw, gen-html and gen-lcov.
 ```
 
-See [Coverage/Html](coverage/html).
+<a href="coverage/html/index.html" title="Html Coverage">Html Coverage</a>
 
 ## License
 
