@@ -15,7 +15,6 @@ Where `xxx` is one of the `Tasks` below:
 
 > See [cargo/config](.cargo/config) for the aliases
 
-
 Tasks
  * pre-commit
    * Runs `cargo fmt`, `cargo clippy` and `cargo test` in \<proj-root\>
